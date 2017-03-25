@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SQLite;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.IO;
@@ -30,7 +31,16 @@ namespace IntersectionLineRectangle
             InitializeComponent();
             CenterToScreen();
             SetStyle(ControlStyles.ResizeRedraw, true);
-        
+            // Initialize the SQLite Connection
+
+            string DbPatch = System.Configuration.ConfigurationManager.ConnectionStrings["CountourPointDB_ConnectionString"].ConnectionString.ToString();
+            IDbConnection cnn = new SQLiteConnection("Data Source=" + Directory.GetCurrentDirectory() + DbPatch + ";Version=3;");
+            SimpleCRUD.SetDialect(SimpleCRUD.Dialect.SQLite);
+            cnn.Open();
+            IList pointList = cnn.GetList<ContourPoint>().ToList();
+            ContoursGrid.DataSource = pointList;
+            AddLine(cnn);
+            pictBox.Invalidate(); //обновляем  pictBox
 
         }
 
@@ -46,7 +56,7 @@ namespace IntersectionLineRectangle
             IList pointList = cnn.GetList<ContourPoint>().ToList();
             ContoursGrid.DataSource = pointList;
             AddLine(cnn);
-            pictBox.Refresh(); //обновляем  pictBox
+            pictBox.Invalidate(); //обновляем  pictBox
         }
 
 
@@ -143,7 +153,16 @@ namespace IntersectionLineRectangle
 
         }
 
-  
+        private void TestForm_Resize(object sender, EventArgs e)
+        {
+            pictBox.Invalidate();
+        }
+
+        private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            ProcessStartInfo sInfo = new ProcessStartInfo("https://en.wikipedia.org/wiki/Cohen%E2%80%93Sutherland_algorithm");
+            Process.Start(sInfo);
+        }
     }
 
 }
